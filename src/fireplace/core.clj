@@ -357,11 +357,44 @@
 
 ; Chapter 8
 
-(-> 25 Math/sqrt int list)
-(eval 42)
-(eval '(list 1 2))
-(eval (list + 1 2))
-(eval (list (symbol "+") 1 2))
+(defmacro unless [condition & body] `(if (not ~condition) (do ~@body)))
+(macroexpand-1 '(unless (= 1 1) (print "HI")))
+(defn xxx [x] (unless (= 1 x) (print "HI")))
+(xxx 1)
+(xxx 2)
+
+; Chapter 9
+
+;; Prototyplical Inheritance.
+(ns fozz.udp (:refer-clojure :exclude [get]))
+(defn beget [o p] (assoc o ::prototype p))
+(def put assoc)
+(defn get [m k]
+  (when m
+    (if-let [[_ v] (find m k)]
+      v
+      (recur (::prototype m) k))))
+(def cat {:likes-dogs true, :ocd-bathing true})
+(def morris (beget {:likes-9lives true} cat))
+(def post-traumatic-morris (beget {:likes-dogs nil} morris))
+(get cat :likes-dogs)
+(get morris :likes-dogs)
+(get post-traumatic-morris :likes-dogs)
+
+;; Multi Methods
+(defmulti compiler :os)
+(defmethod compiler ::unix [m] (get m :c-compiler))
+(defmethod compiler ::osx [m] (get m :c-compiler))
+(def clone (partial beget {}))
+(def unix
+  {:os ::unix, :c-compiler "cc", :home "/home", :dev "/dev"})
+(def osx (-> (clone unix)
+             (put :os ::osx)
+             (put :c-compiler "gcc")
+             (put :home "/Users")))
+(compiler unix)
+(compiler osx)
+
 
 (defn -main
   "I don't do a whole lot ... yet."
